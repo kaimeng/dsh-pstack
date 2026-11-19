@@ -144,7 +144,8 @@ async function main(): Promise<void> {
     if (phase === "raw") mountRawTree(worker);
     buildProfile(worker, phase, enabledPackages, matrix.teamMode === true);
     writeFileSync(worker.phaseFile, `${phase}\n`);
-    copyCredentials(worker, config.credentialsFile);
+    // Credentials stay with the host unless the config opts in, so workers start logged out.
+    if (config.credentialsFile) copyCredentials(worker, config.credentialsFile);
     writeHomePatch(worker, plan, phase);
     writeRoleFile(worker, config);
     writePstackSettings(worker, phase === "adapted");
