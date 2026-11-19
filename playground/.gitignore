@@ -4,6 +4,8 @@
 
 # Local config with provider keys and allowed routes; copy config.example.json and fill the real values.
 config.json
+# Local host provider patch referenced by config.json; endpoint and model ids stay machine-specific.
+host.patch.yml
 node_modules
 *.log
 .DS_Store
