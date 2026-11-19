@@ -580,9 +580,9 @@ export async function startWeb(
   plan: ProviderPlan,
   port = 0,
 ): Promise<StartedWeb> {
-  if (process.platform !== "linux") {
+  if (process.platform !== "linux" && process.platform !== "darwin") {
     throw new Error(
-      "the managed web lifecycle currently supports Linux only; run scenarios in a managed DSH process",
+      `the managed web lifecycle supports Linux and macOS only; ${process.platform} is not supported`,
     );
   }
   mkdirSync(paths.home, { recursive: true });
@@ -670,14 +670,33 @@ function isAlive(pid: number): boolean {
   }
 }
 
+/**
+ * Returns the command line a live pid was started with, or null when the platform cannot
+ * report it. Linux exposes it through `/proc`; macOS goes through `pgrep -fl`, whose output
+ * also starts with the pid. `ps` is not usable here because sandboxed sessions deny it.
+ */
+function processCommandLine(pid: number): string | null {
+  if (process.platform === "linux") {
+    try {
+      return readFileSync(`/proc/${pid}/cmdline`, "utf8").replaceAll("\0", " ");
+    } catch {
+      return null;
+    }
+  }
+  if (process.platform === "darwin") {
+    const result = spawnSync("pgrep", ["-fl", PROFILE_NAME], { encoding: "utf8" });
+    if (result.error || result.status !== 0) return null;
+    const prefix = `${pid} `;
+    const line = result.stdout.split("\n").find((entry) => entry.startsWith(prefix));
+    return line?.slice(prefix.length) ?? null;
+  }
+  return null;
+}
+
 function isDshWeb(pid: number): boolean {
   if (!isAlive(pid)) return false;
-  try {
-    const command = readFileSync(`/proc/${pid}/cmdline`, "utf8");
-    return command.includes("dsh") && command.includes(PROFILE_NAME);
-  } catch {
-    return false;
-  }
+  const command = processCommandLine(pid);
+  return command !== null && command.includes("dsh") && command.includes(PROFILE_NAME);
 }
 
 export function stopWeb(paths: WorkerPaths): { stopped: boolean; pid: number | null } {

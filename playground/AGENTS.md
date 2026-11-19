@@ -4,7 +4,7 @@
 
 ## 环境
 
-- 使用真实 DSH Web 会话，Linux 是 playground worker 运行时唯一支持的平台；其他平台先运行 `playground:doctor`。
+- 使用真实 DSH Web 会话，Linux 与 macOS 是 playground worker 运行时支持的平台；其他平台先运行 `playground:doctor` 确认。
 - 每个 worker 使用独立 home、浏览器 profile、证据目录和隔离工作区；worker 不携带 Git/GitHub 凭证。
 - 真实模型选择由用户确认；RunRecord 记录实际路由、DSH 版本、上游 revision 和配置 hash。
 - `raw/base` 观察原生 DSH；`raw/<capability-environment>` 只作为可选能力对照；`adapted` 验证适配实现。

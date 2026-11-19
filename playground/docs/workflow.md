@@ -1,6 +1,6 @@
 # Playground 验证流程
 
-本文件定义 playground 的阶段、命令、批次和交接条件。所有命令在仓库根执行，Linux 是 playground worker 运行时唯一支持的平台。
+本文件定义 playground 的阶段、命令、批次和交接条件。所有命令在仓库根执行，playground worker 运行时支持 Linux 与 macOS。
 
 ## 阶段模型
 

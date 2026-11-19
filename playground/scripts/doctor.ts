@@ -17,11 +17,14 @@ function versionOf(binary: string): string | null {
   return `${result.stdout ?? ""}${result.stderr ?? ""}`.trim().split("\n")[0] ?? null;
 }
 
-if (process.platform !== "linux") {
-  check("platform", false, `${process.platform} is not supported; playground runs on Linux only`);
-} else {
-  check("platform", true, "linux");
-}
+const supportedPlatform = process.platform === "linux" || process.platform === "darwin";
+check(
+  "platform",
+  supportedPlatform,
+  supportedPlatform
+    ? process.platform
+    : `${process.platform} is not supported; playground runs on Linux and macOS`,
+);
 
 const requiredNode = (
   JSON.parse(readFileSync("package.json", "utf8")) as {

@@ -16,15 +16,28 @@ export function agentBrowserBin(): string {
   return BIN;
 }
 
-/** Highest-versioned Chrome the agent-browser installer dropped under ~/.agent-browser/browsers. */
+/** Chrome used for automation: env override, then macOS system Chrome, then the installer's copy. */
 export function chromeExecutable(): string {
   if (process.env.AGENT_BROWSER_CHROME_PATH) return process.env.AGENT_BROWSER_CHROME_PATH;
+  // The installer follows Chrome's Stable channel, which can run ahead of the OS; prefer the
+  // system build on macOS so a fresh download cannot make the browser unusable.
+  const systemChrome = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  if (process.platform === "darwin" && existsSync(systemChrome)) return systemChrome;
   const root = join(homedir(), ".agent-browser", "browsers");
   const candidates: string[] = [];
   if (existsSync(root)) {
     for (const name of readdirSync(root)) {
-      const binary = join(root, name, "chrome");
-      if (existsSync(binary)) candidates.push(binary);
+      const linux = join(root, name, "chrome");
+      if (existsSync(linux)) candidates.push(linux);
+      const mac = join(
+        root,
+        name,
+        "Google Chrome for Testing.app",
+        "Contents",
+        "MacOS",
+        "Google Chrome for Testing",
+      );
+      if (existsSync(mac)) candidates.push(mac);
     }
   }
   candidates.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
